@@ -10,15 +10,50 @@ app.use(cors());
 app.use(bodyParser.json());
 
 const apiRouter = express.Router();
+const now = new Date();
 
 // You can delete this route once you add your own routes
-apiRouter.get("/", async (req, res) => {
-  const SHOW_TABLES_QUERY =
-    process.env.DB_CLIENT === "pg"
-      ? "SELECT * FROM pg_catalog.pg_tables;"
-      : "SHOW TABLES;";
-  const tables = await knex.raw(SHOW_TABLES_QUERY);
-  res.json({ tables });
+apiRouter.get("/future-meals", (req, res) => {
+  knex("Meal")
+    .select("*")
+    .where("when", ">", now)
+    .then((meals) => {
+      res.send(meals);
+    });
+});
+
+apiRouter.get("/past-meals", (req, res) => {
+  knex("Meal")
+    .select("*")
+    .where("when", "<", now)
+    .then((meals) => {
+      res.send(meals);
+    });
+});
+
+apiRouter.get("/all-meals", (req, res) => {
+  knex("Meal")
+    .select("*")
+    .orderBy("id", "asc")
+    .then((meals) => {
+      res.send(meals);
+    });
+});
+apiRouter.get("/first-meal", (req, res) => {
+  knex("Meal")
+    .select("*")
+    .first("id")
+    .then((meals) => {
+      res.send(meals);
+    });
+});
+apiRouter.get("/last-meal", (req, res) => {
+  knex("Meal")
+    .select("*")
+    .limit(1)
+    .then((meals) => {
+      res.send(meals);
+    });
 });
 
 // This nested router example can also be replaced with your own sub-router
